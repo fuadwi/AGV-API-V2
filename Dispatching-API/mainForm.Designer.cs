@@ -31,20 +31,23 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
             this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-            this.modbusCom = new System.IO.Ports.SerialPort(this.components);
-            this.modbusWorker = new System.ComponentModel.BackgroundWorker();
             this.btnStartService = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.lblStatus = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.btnStopService = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.apiWorker = new System.ComponentModel.BackgroundWorker();
             this.timHandleCaller = new System.Windows.Forms.Timer(this.components);
-            this.modbusMasterWorker = new System.ComponentModel.BackgroundWorker();
+            this.serialPort1 = new System.IO.Ports.SerialPort(this.components);
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button2 = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
             this.listBox2 = new System.Windows.Forms.ListBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -57,15 +60,11 @@
             this.notifyIcon.Text = "notifyIcon1";
             this.notifyIcon.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIcon1_MouseDoubleClick);
             // 
-            // modbusWorker
-            // 
-            this.modbusWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ModbusWorker_DoWork);
-            // 
             // btnStartService
             // 
-            this.btnStartService.Location = new System.Drawing.Point(6, 19);
+            this.btnStartService.Location = new System.Drawing.Point(2, 19);
             this.btnStartService.Name = "btnStartService";
-            this.btnStartService.Size = new System.Drawing.Size(75, 23);
+            this.btnStartService.Size = new System.Drawing.Size(109, 43);
             this.btnStartService.TabIndex = 0;
             this.btnStartService.Text = "Start";
             this.btnStartService.UseVisualStyleBackColor = true;
@@ -79,7 +78,7 @@
             this.groupBox1.Controls.Add(this.btnStartService);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(170, 107);
+            this.groupBox1.Size = new System.Drawing.Size(289, 162);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Service Controller";
@@ -88,9 +87,9 @@
             // 
             this.lblStatus.BackColor = System.Drawing.Color.Red;
             this.lblStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblStatus.Location = new System.Drawing.Point(6, 64);
+            this.lblStatus.Location = new System.Drawing.Point(40, 92);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(156, 33);
+            this.lblStatus.Size = new System.Drawing.Size(186, 60);
             this.lblStatus.TabIndex = 3;
             this.lblStatus.Text = "STOP";
             this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -98,7 +97,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(47, 45);
+            this.label1.Location = new System.Drawing.Point(97, 75);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(76, 13);
             this.label1.TabIndex = 2;
@@ -107,9 +106,9 @@
             // btnStopService
             // 
             this.btnStopService.Enabled = false;
-            this.btnStopService.Location = new System.Drawing.Point(87, 19);
+            this.btnStopService.Location = new System.Drawing.Point(159, 19);
             this.btnStopService.Name = "btnStopService";
-            this.btnStopService.Size = new System.Drawing.Size(75, 23);
+            this.btnStopService.Size = new System.Drawing.Size(109, 43);
             this.btnStopService.TabIndex = 1;
             this.btnStopService.Text = "Stop";
             this.btnStopService.UseVisualStyleBackColor = true;
@@ -117,23 +116,13 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 125);
+            this.button1.Location = new System.Drawing.Point(6, 19);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(170, 37);
+            this.button1.Size = new System.Drawing.Size(127, 37);
             this.button1.TabIndex = 2;
             this.button1.Text = "Setting";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.Button1_Click);
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.listBox2);
-            this.groupBox3.Location = new System.Drawing.Point(188, 12);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(260, 162);
-            this.groupBox3.TabIndex = 5;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "API Request Log";
             // 
             // apiWorker
             // 
@@ -144,26 +133,74 @@
             // 
             this.timHandleCaller.Tick += new System.EventHandler(this.TimHandleCaller_Tick);
             // 
-            // modbusMasterWorker
+            // groupBox2
             // 
-            this.modbusMasterWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.ModbusMasterWorker_DoWork);
+            this.groupBox2.Controls.Add(this.button2);
+            this.groupBox2.Controls.Add(this.button1);
+            this.groupBox2.Location = new System.Drawing.Point(12, 194);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(289, 71);
+            this.groupBox2.TabIndex = 4;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Setup Configuration";
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(141, 19);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(127, 37);
+            this.button2.TabIndex = 3;
+            this.button2.Text = "Test Page";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(580, 283);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(142, 13);
+            this.label2.TabIndex = 6;
+            this.label2.Text = "Developed and Designed by";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(614, 296);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(108, 13);
+            this.label3.TabIndex = 7;
+            this.label3.Text = "Infinitigroup - AIRLAB";
             // 
             // listBox2
             // 
             this.listBox2.FormattingEnabled = true;
-            this.listBox2.Location = new System.Drawing.Point(6, 15);
+            this.listBox2.Location = new System.Drawing.Point(6, 19);
             this.listBox2.Name = "listBox2";
-            this.listBox2.Size = new System.Drawing.Size(250, 147);
-            this.listBox2.TabIndex = 0;
+            this.listBox2.Size = new System.Drawing.Size(352, 225);
+            this.listBox2.TabIndex = 3;
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.listBox2);
+            this.groupBox3.Location = new System.Drawing.Point(364, 12);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(364, 253);
+            this.groupBox3.TabIndex = 5;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "API Request Log";
+            this.groupBox3.Enter += new System.EventHandler(this.groupBox3_Enter);
             // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(456, 186);
+            this.ClientSize = new System.Drawing.Size(740, 325);
             this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.ForeColor = System.Drawing.SystemColors.ControlText;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -177,27 +214,31 @@
             this.Resize += new System.EventHandler(this.Form1_Resize);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private System.Windows.Forms.NotifyIcon notifyIcon;
-        private System.IO.Ports.SerialPort modbusCom;
-        private System.ComponentModel.BackgroundWorker modbusWorker;
         private System.Windows.Forms.Button btnStartService;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnStopService;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.GroupBox groupBox3;
         private System.ComponentModel.BackgroundWorker apiWorker;
         private System.Windows.Forms.Timer timHandleCaller;
-        private System.ComponentModel.BackgroundWorker modbusMasterWorker;
-        private System.Windows.Forms.ListBox listBox2;
+        private System.IO.Ports.SerialPort serialPort1;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
+        public System.Windows.Forms.ListBox listBox2;
+        private System.Windows.Forms.GroupBox groupBox3;
     }
 }
 

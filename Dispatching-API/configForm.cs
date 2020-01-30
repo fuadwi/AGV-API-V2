@@ -121,7 +121,7 @@ namespace Dispatching_API
             mff.Show();
           
         }
-
+        [Obsolete]
         private void button3_Click(object sender, EventArgs e)
         {
             saveConfiguration();
@@ -134,7 +134,11 @@ namespace Dispatching_API
 
         private void button2_Click(object sender, EventArgs e)
         {
-            this.Hide();
+            this.Close();
+            restartProgram();
+            //mainFormVar.Visible = true;
+            mainForm mf = new mainForm();
+            mf.Show();
         }
 
         private void textBox6_KeyDown(object sender, KeyEventArgs e)
@@ -165,6 +169,16 @@ namespace Dispatching_API
         
             
 
+        }
+
+        private void textBox7_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            
         }
     }
 }

@@ -20,10 +20,7 @@ namespace Dispatching_API
 {
     public partial class mainForm : Form
 
-    {
-        
-         
-       
+    {  
         public mainForm()
         {
             InitializeComponent();
@@ -35,7 +32,7 @@ namespace Dispatching_API
         private int oldDataRoute = 0; 
         Form configFormVar = new configForm();
         private delegate void PrintToLog(String log);
-
+        public System.IO.Ports.SerialPort sport;
         [Obsolete]
         private void handleNewConfiguration(object Sender, ConfigurationEvent e)
         {
@@ -49,16 +46,16 @@ namespace Dispatching_API
         [Obsolete]
         private void Form1_Load(object sender, EventArgs e)
         {
-            listBox2.Visible = true;
-            listBox2.Enabled = true;
-            listBox2.BackColor = Color.White;
-           
-           url = System.Configuration.ConfigurationSettings.AppSettings["listenHost"] + ":" + System.Configuration.ConfigurationSettings.AppSettings["listenPort"] + "/";
+            //listBox2.Visible = true;
+            //listBox2.Enabled = true;
+            //listBox2.BackColor = Color.White;
+
+            url = System.Configuration.ConfigurationSettings.AppSettings["listenHost"] + ":" + System.Configuration.ConfigurationSettings.AppSettings["listenPort"] + "/";
             Console.WriteLine("URL = {0}", url);
             dataStore = Modbus.Data.DataStoreFactory.CreateDefaultDataStore();
             dataStore.HoldingRegisters[102] = 0;
-           
-           startGaes();
+
+            //startGaes();
         }
         public void formConfigClosed()
         {
@@ -99,6 +96,8 @@ namespace Dispatching_API
             {
                 var d = new PrintToLog(printLog);
                 listBox2.Invoke(d, new object[] { log });
+                
+
             }
             else
             {
@@ -111,17 +110,16 @@ namespace Dispatching_API
              
         }
         [Obsolete]
-        private void startGaes()
+        private void BtnStartService_Click(object sender, EventArgs e)
         {
             try
             {
-                modbusCom.PortName = System.Configuration.ConfigurationSettings.AppSettings["comPort"];
-                modbusCom.BaudRate = Convert.ToInt32(System.Configuration.ConfigurationSettings.AppSettings["comBaud"]);
-                modbusCom.DataBits = 8;
-                modbusCom.Parity = Parity.None;
-                modbusCom.StopBits = StopBits.One;
-                modbusCom.Open();
-                modbusWorker.RunWorkerAsync();
+                string port = System.Configuration.ConfigurationSettings.AppSettings["comPort"];
+                int baudrate = Convert.ToInt32(System.Configuration.ConfigurationSettings.AppSettings["comBaud"]);
+                Parity parity = Parity.None;
+                int databits = 8;
+                StopBits stopbits = StopBits.One;
+                serialport_connect(port, baudrate, parity, databits, stopbits);
                 btnStartService.Enabled = false;
                 btnStopService.Enabled = true;
                 lblStatus.Text = "RUNNING";
@@ -132,56 +130,30 @@ namespace Dispatching_API
                 notifyIcon.ShowBalloonTip(100, "INFINITI-WMS-AGV", "AGV Dispatching API Service is Started!", ToolTipIcon.Info);
                 notifyIcon.Visible = false;
             }
-            catch (IOException SE)
-            {
-                MessageBox.Show("Com Port is Not Ready!", "!! Error !!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            catch (UnauthorizedAccessException HLE)
-            {
-                MessageBox.Show("Server Port Isn't Available", "!! Error !!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+           
             catch
             {
-                if (modbusCom.IsOpen) modbusCom.Close();
-                if (!modbusWorker.IsBusy) modbusWorker.CancelAsync();
+                if (sport.IsOpen) sport.Close();
                 if (!apiWorker.IsBusy) apiWorker.CancelAsync();
-                modbusCom.Close();
+                sport.Close();
                 btnStartService.Enabled = true;
                 btnStopService.Enabled = false;
                 lblStatus.Text = "STOP";
                 lblStatus.BackColor = Color.Red;
-
             }
-        }
-        private void BtnStartService_Click(object sender, EventArgs e)
-        {
-           
-                startGaes();
 
         }
-        private void ModbusWorker_DoWork(object sender, DoWorkEventArgs e)
-        {
-            try
-            {
-
-                ModbusSerialSlave ms = ModbusSerialSlave.CreateRtu(1, modbusCom);
-                ms.DataStore = dataStore;
-                ms.Listen();
-            }
-            catch
-            {
-
-            }
-        }
+        
         private void stopservice()
         {
             try
             {
                 timHandleCaller.Enabled = false;
                 listener.Stop();
-                if (!modbusWorker.IsBusy) modbusWorker.CancelAsync();
+                //if (!modbusWorker.IsBusy) modbusWorker.CancelAsync();
                 if (!apiWorker.IsBusy) apiWorker.CancelAsync();
-                modbusCom.Close();
+                //modbusCom.Close();
+                sport.Close();
                 btnStartService.Enabled = true;
                 btnStopService.Enabled = false;
                 lblStatus.Text = "STOP";
@@ -192,12 +164,12 @@ namespace Dispatching_API
 
             }
         }
+       
         private void BtnStopService_Click(object sender, EventArgs e)
         {
             
                 stopservice();
            
-          
         }
         private void Button1_Click(object sender, EventArgs e)
         {
@@ -206,10 +178,7 @@ namespace Dispatching_API
                 this.Hide();
                 configForm cff = new configForm();
                 cff.Show();
-                // if (configFormVar.IsDisposed) configFormVar = new configForm();
-                //  configFormVar.Show();
-                //  configFormVar.Focus();
-            }
+                          }
             else
             {
                 MessageBox.Show("Stop the Service first", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -246,6 +215,9 @@ namespace Dispatching_API
                     Console.WriteLine(req.UserHostName);
                     Console.WriteLine("Request to route " + req.QueryString["route"]);
                     Console.WriteLine();
+                    int route = Convert.ToInt32(req.QueryString["route"]);
+                    dataRoute = route;
+                  
                 }
                 PrintToLog logging = printLog;
                 logging.Invoke("RX<-"+req.RawUrl);
@@ -255,7 +227,7 @@ namespace Dispatching_API
                 
                 if (String.IsNullOrEmpty(req.QueryString["route"]))
                 {
-                    data = Encoding.UTF8.GetBytes("Casun AGV API");
+                    data = Encoding.UTF8.GetBytes("Infiniti 4.0 AGV API");
                 }
                 else
                 {
@@ -263,7 +235,10 @@ namespace Dispatching_API
                     {
                         int route = Convert.ToInt32(req.QueryString["route"]);
                         dataRoute = route;
+                        ////Send Route
+                        sendByte((byte)route);
                         data = Encoding.UTF8.GetBytes("Accepted, route=" + route.ToString());
+                      
                     }
                     catch
                     {
@@ -275,7 +250,7 @@ namespace Dispatching_API
                 resp.ContentLength64 = data.LongLength;
 
                 logging.Invoke("TX->" + Encoding.UTF8.GetString(data));
-                // Write out to the response stream (asynchronously), then close it
+               
                 await resp.OutputStream.WriteAsync(data, 0, data.Length);
                 resp.Close();
             }
@@ -314,16 +289,13 @@ namespace Dispatching_API
                     }
 
                     logging.Invoke("Listening for connections on " + url.ToString());
-                    //Console.WriteLine("Listening for connections on {0}", url);
-                    // Handle requests
-                    Task listenTask = HandleIncomingConnections();
+                                Task listenTask = HandleIncomingConnections();
                     listenTask.GetAwaiter().GetResult();
-                    // Close the listener
-                    listener.Close();
+                                       listener.Close();
                 }
-                catch(Exception Ee)
+                catch (Exception Ee)
                 {
-                   // MessageBox.Show(Ee.Message, "Error Message = {0}");
+                  
                     break;
                 }
             }
@@ -342,7 +314,11 @@ namespace Dispatching_API
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             DialogResult dialog = MessageBox.Show("Do you want to Exit?\n\tYes = Exit\n\tNo = Hide", "Hide or Exit", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button3);
-            if (dialog == DialogResult.No)
+            if (dialog == DialogResult.Yes)
+            {
+                Environment.Exit(0);
+            }
+            else if (dialog == DialogResult.No)
             {
                 e.Cancel = true;
                 this.WindowState = FormWindowState.Minimized;
@@ -357,17 +333,65 @@ namespace Dispatching_API
             }
         }
 
-        private void ModbusMasterWorker_DoWork(object sender, DoWorkEventArgs e)
+        public void serialport_connect(String port, int baudrate, Parity parity, int databits, StopBits stopbits)
         {
-            ModbusSerialMaster modbus = ModbusSerialMaster.CreateRtu(modbusCom);
-            while (true)
+            sport = new System.IO.Ports.SerialPort(
+            port, baudrate, parity, databits, stopbits);
+            try
             {
-                Console.WriteLine("Addr = {0}", modbus.ReadHoldingRegisters(1, 104, 1));
-                Thread.Sleep(1000);
+                sport.Open();
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error");
             }
         }
+        //send route by Serial
+        private void sendByte(byte route)
+        {
+            byte[] result = new byte[14];
+            result[0] = 0x10;
+            result[1] = 0x41;
+            result[2] = 0x30;
+            result[3] = 0x3B;
+            result[4] = 0x30;
+            result[5] = 0x50;
+            result[6] = 0x30;
+            result[7] = (byte)((0x30 + route));
+            result[8] = 0x00;
+            result[9] = 0x00;
+            result[10] = 0x00;
+            result[11] = 0x00;
+            result[12] = 0x00;
+            //XOR ALL DATA
+            for (int i = 0; i < 12; i++)
+            {
+                result[12] = (byte)(result[12] ^ result[i]);
+            }
+            result[13] = 0x03;
 
-        private void Button2_Click(object sender, EventArgs e)
+            sport.Write(result, 0, result.Length);
+            Thread.Sleep(100);
+            sport.Write(result, 0, result.Length);
+            //Thread.Sleep(500);
+            //sport.Write(result, 0, result.Length);
+            //Thread.Sleep(500);
+            //sport.Write(result, 0, result.Length);
+            //Thread.Sleep(500);
+            //sport.Write(result, 0, result.Length);
+            //Thread.Sleep(500);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            testPage tp = new testPage();
+            //mainForm mff = new mainForm();
+            tp.Show();
+            //mff.Show();
+        }
+
+        private void groupBox3_Enter(object sender, EventArgs e)
         {
 
         }

@@ -26,8 +26,8 @@ namespace Dispatching_API
 
         private void testPage_FormClosed(object sender, FormClosedEventArgs e)
         {
-            configForm cf = new configForm();
-            cf.Show();
+           mainForm mf = new mainForm();
+            mf.Show();
             //configformVar1.Visible = true;
         }
 
