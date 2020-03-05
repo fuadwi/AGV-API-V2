@@ -20,7 +20,7 @@ namespace Dispatching_API
 {
     public partial class mainForm : Form
 
-    {  
+    {
         public mainForm()
         {
             InitializeComponent();
@@ -29,7 +29,7 @@ namespace Dispatching_API
         private static HttpListener listener;
         private static string url;
         private static volatile int dataRoute = 0;
-        private int oldDataRoute = 0; 
+        private int oldDataRoute = 0;
         Form configFormVar = new configForm();
         private delegate void PrintToLog(String log);
         public System.IO.Ports.SerialPort sport;
@@ -49,13 +49,13 @@ namespace Dispatching_API
             //listBox2.Visible = true;
             //listBox2.Enabled = true;
             //listBox2.BackColor = Color.White;
-
             url = System.Configuration.ConfigurationSettings.AppSettings["listenHost"] + ":" + System.Configuration.ConfigurationSettings.AppSettings["listenPort"] + "/";
             Console.WriteLine("URL = {0}", url);
             dataStore = Modbus.Data.DataStoreFactory.CreateDefaultDataStore();
             dataStore.HoldingRegisters[102] = 0;
+            BtnStartService_Click(sender, e);
 
-            //startGaes();
+
         }
         public void formConfigClosed()
         {
@@ -96,7 +96,7 @@ namespace Dispatching_API
             {
                 var d = new PrintToLog(printLog);
                 listBox2.Invoke(d, new object[] { log });
-                
+
 
             }
             else
@@ -107,7 +107,7 @@ namespace Dispatching_API
                 }
                 listBox2.Items.Add(log);
             }
-             
+
         }
         [Obsolete]
         private void BtnStartService_Click(object sender, EventArgs e)
@@ -130,7 +130,7 @@ namespace Dispatching_API
                 notifyIcon.ShowBalloonTip(100, "INFINITI-WMS-AGV", "AGV Dispatching API Service is Started!", ToolTipIcon.Info);
                 notifyIcon.Visible = false;
             }
-           
+
             catch
             {
                 if (sport.IsOpen) sport.Close();
@@ -143,7 +143,7 @@ namespace Dispatching_API
             }
 
         }
-        
+
         private void stopservice()
         {
             try
@@ -164,21 +164,21 @@ namespace Dispatching_API
 
             }
         }
-       
+
         private void BtnStopService_Click(object sender, EventArgs e)
         {
-            
-                stopservice();
-           
+
+            stopservice();
+
         }
         private void Button1_Click(object sender, EventArgs e)
         {
-            if (lblStatus.Text ==  "STOP")
+            if (lblStatus.Text == "STOP")
             {
                 this.Hide();
                 configForm cff = new configForm();
                 cff.Show();
-                          }
+            }
             else
             {
                 MessageBox.Show("Stop the Service first", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -194,7 +194,7 @@ namespace Dispatching_API
             {
                 // Will wait here until we hear from a connection
                 HttpListenerContext ctx = await listener.GetContextAsync();
-                
+
                 // Peel out the requests and response objects
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
@@ -217,14 +217,14 @@ namespace Dispatching_API
                     Console.WriteLine();
                     int route = Convert.ToInt32(req.QueryString["route"]);
                     dataRoute = route;
-                  
+
                 }
                 PrintToLog logging = printLog;
-                logging.Invoke("RX<-"+req.RawUrl);
-           
+                logging.Invoke("RX<-" + req.RawUrl);
+
                 string disableSubmit = !runServer ? "disabled" : "";
                 byte[] data;
-                
+
                 if (String.IsNullOrEmpty(req.QueryString["route"]))
                 {
                     data = Encoding.UTF8.GetBytes("Infiniti 4.0 AGV API");
@@ -236,9 +236,10 @@ namespace Dispatching_API
                         int route = Convert.ToInt32(req.QueryString["route"]);
                         dataRoute = route;
                         ////Send Route
-                        sendByte((byte)route);
+                        //sendByte((byte)route);
+                        sendByte(route);
                         data = Encoding.UTF8.GetBytes("Accepted, route=" + route.ToString());
-                      
+
                     }
                     catch
                     {
@@ -250,7 +251,7 @@ namespace Dispatching_API
                 resp.ContentLength64 = data.LongLength;
 
                 logging.Invoke("TX->" + Encoding.UTF8.GetString(data));
-               
+
                 await resp.OutputStream.WriteAsync(data, 0, data.Length);
                 resp.Close();
             }
@@ -289,13 +290,13 @@ namespace Dispatching_API
                     }
 
                     logging.Invoke("Listening for connections on " + url.ToString());
-                                Task listenTask = HandleIncomingConnections();
+                    Task listenTask = HandleIncomingConnections();
                     listenTask.GetAwaiter().GetResult();
-                                       listener.Close();
+                    listener.Close();
                 }
                 catch (Exception Ee)
                 {
-                  
+
                     break;
                 }
             }
@@ -316,8 +317,16 @@ namespace Dispatching_API
             DialogResult dialog = MessageBox.Show("Do you want to Exit?\n\tYes = Exit\n\tNo = Hide", "Hide or Exit", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button3);
             if (dialog == DialogResult.Yes)
             {
-                Environment.Exit(0);
-            }
+                try
+                {  //Application.Exit(1);
+                    Environment.Exit(0);
+                }
+                catch (Exception excet)
+                {
+                    MessageBox.Show(excet.ToString(), "Error");
+                }
+
+             }
             else if (dialog == DialogResult.No)
             {
                 e.Cancel = true;
@@ -327,7 +336,7 @@ namespace Dispatching_API
                 notifyIcon.ShowBalloonTip(100, "INFINITI 4.0", "The Program Running in System Tray", ToolTipIcon.Info);
 
             }
-            else if(dialog == DialogResult.Cancel)
+            else if (dialog == DialogResult.Cancel)
             {
                 e.Cancel = true;
             }
@@ -340,7 +349,7 @@ namespace Dispatching_API
             try
             {
                 sport.Open();
-                
+
             }
             catch (Exception ex)
             {
@@ -348,18 +357,49 @@ namespace Dispatching_API
             }
         }
         //send route by Serial
-        private void sendByte(byte route)
+        private void sendByte(int route)
         {
-            byte[] result = new byte[14];
-            result[0] = 0x10;
-            result[1] = 0x41;
-            result[2] = 0x30;
-            result[3] = 0x3B;
-            result[4] = 0x30;
-            result[5] = 0x50;
-            result[6] = 0x30;
-            result[7] = (byte)((0x30 + route));
-            result[8] = 0x00;
+                byte[] result = new byte[14];
+                result[0] = 0x10;
+                result[1] = 0x41;
+                result[2] = 0x30;
+                result[3] = 0x30;
+                result[4] = 0x30;
+                result[5] = 0x50;
+                result[6] = 0x30;
+                result[7] = (byte)((0x30 + route));
+                result[8] = 0x00;
+                if ((route > 207) && (route <= 254))
+                {
+                    result[6] = 0x31;
+                    result[7] = (byte)(route - 208);
+                }
+          
+            else if (route == 492)
+            {
+                result[6] = 0x32;
+                result[7] = 0x1C;
+            }
+            else if (route == 494)
+            {
+                result[6] = 0x32;
+                result[7] = 0x1E;
+            }
+            else if (route == 495)
+            {
+                result[6] = 0x32;
+                result[7] = 0x1F;
+            }
+            else if (route == 496)
+            {
+                result[6] = 0x32;
+                result[7] = 0x20;
+            }
+            else if (route == 497)
+            {
+                result[6] = 0x32;
+                result[7] = 0x21;
+            }
             result[9] = 0x00;
             result[10] = 0x00;
             result[11] = 0x00;
@@ -372,15 +412,20 @@ namespace Dispatching_API
             result[13] = 0x03;
 
             sport.Write(result, 0, result.Length);
-            Thread.Sleep(100);
-            sport.Write(result, 0, result.Length);
-            //Thread.Sleep(500);
-            //sport.Write(result, 0, result.Length);
-            //Thread.Sleep(500);
-            //sport.Write(result, 0, result.Length);
-            //Thread.Sleep(500);
-            //sport.Write(result, 0, result.Length);
-            //Thread.Sleep(500);
+
+
+            //private void button2_Click(object sender, EventArgs e)
+            //{
+            //    testPage tp = new testPage();
+            //    //mainForm mff = new mainForm();
+            //    tp.Show();
+            //    //mff.Show();
+            //}
+
+            //private void groupBox3_Enter(object sender, EventArgs e)
+            //{
+
+            //}
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -391,7 +436,7 @@ namespace Dispatching_API
             //mff.Show();
         }
 
-        private void groupBox3_Enter(object sender, EventArgs e)
+        private void label4_Click(object sender, EventArgs e)
         {
 
         }

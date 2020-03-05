@@ -89,6 +89,7 @@
             this.Controls.Add(this.exitButton);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.routeNum);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "testPage";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Infiniti Test Page";

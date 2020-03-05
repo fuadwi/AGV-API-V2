@@ -292,7 +292,7 @@ namespace ModbusTestClient
             this.textBoxBaud.Name = "textBoxBaud";
             this.textBoxBaud.Size = new System.Drawing.Size(58, 20);
             this.textBoxBaud.TabIndex = 11;
-            this.textBoxBaud.Text = "9600";
+            this.textBoxBaud.Text = "57600";
             // 
             // label4
             // 

@@ -46,6 +46,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.listBox2 = new System.Windows.Forms.ListBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.serialPort2 = new System.IO.Ports.SerialPort(this.components);
+            this.label4 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -174,10 +176,11 @@
             // 
             // listBox2
             // 
+            this.listBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.listBox2.FormattingEnabled = true;
             this.listBox2.Location = new System.Drawing.Point(6, 19);
             this.listBox2.Name = "listBox2";
-            this.listBox2.Size = new System.Drawing.Size(352, 225);
+            this.listBox2.Size = new System.Drawing.Size(352, 223);
             this.listBox2.TabIndex = 3;
             // 
             // groupBox3
@@ -189,7 +192,21 @@
             this.groupBox3.TabIndex = 5;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "API Request Log";
-            this.groupBox3.Enter += new System.EventHandler(this.groupBox3_Enter);
+            // 
+            // serialPort2
+            // 
+            this.serialPort2.PortName = "COM2";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(13, 284);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(116, 25);
+            this.label4.TabIndex = 8;
+            this.label4.Text = "AGV 4WD";
+            this.label4.Click += new System.EventHandler(this.label4_Click);
             // 
             // mainForm
             // 
@@ -197,6 +214,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(740, 325);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -207,7 +225,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "mainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "INFINITI-WMS-AGV";
+            this.Text = "INFINITI-WMS-AGV-4WD";
             this.TransparencyKey = System.Drawing.Color.White;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -239,6 +257,8 @@
         private System.Windows.Forms.Label label3;
         public System.Windows.Forms.ListBox listBox2;
         private System.Windows.Forms.GroupBox groupBox3;
+        private System.IO.Ports.SerialPort serialPort2;
+        private System.Windows.Forms.Label label4;
     }
 }
 
